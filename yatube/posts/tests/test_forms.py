@@ -76,6 +76,7 @@ class PostsFormTests(TestCase):
                 group=self.group,
                 author=self.user,
                 text='Тестовый пост',
+                image='posts/test_img.gif',
             ).exists()
         )
 
@@ -111,7 +112,6 @@ class PostsFormTests(TestCase):
                 group=self.group,
                 author=self.user,
                 text='Тестовый пост',
-                image='posts/test_img.gif',
             ).exists()
         )
 

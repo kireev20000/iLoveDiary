@@ -4,14 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post, User
+from .models import Follow, Group, Post
 from .utilities import dry_paginator
 
 User = get_user_model()
 
 
 def index(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.select_related("author", "group")
     page_obj = dry_paginator(post_list, request)
     context = {
         'page_obj': page_obj,
@@ -59,13 +59,16 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    form = PostForm(request.POST or None)
-    if form.is_valid():
-        post = form.save(commit=False)
-        post.author = request.user
-        form.save()
-        return redirect('posts:profile', request.user)
-    return render(request, 'posts/create_post.html', {'form': form})
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+    )
+    if not form.is_valid():
+        return render(request, 'posts/create_post.html', {'form': form})
+    post = form.save(commit=False)
+    post.author = request.user
+    form.save()
+    return redirect('posts:profile', request.user)
 
 
 @login_required
@@ -120,6 +123,8 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    Follow.objects.filter(
-        user=request.user, author__username=username).delete()
+    unfollow_user = Follow.objects.filter(
+        user=request.user, author__username=username)
+    if unfollow_user.exists():
+        unfollow_user.delete()
     return redirect('posts:profile', username)

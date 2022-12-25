@@ -16,6 +16,10 @@ class Group(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
+
 
 class Post(models.Model):
     text = models.TextField(
@@ -44,11 +48,12 @@ class Post(models.Model):
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        null=True,
     )
 
     class Meta:
-        ordering = ["-pub_date"]
+        ordering = ("-pub_date",)
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
 
@@ -76,6 +81,14 @@ class Comment(models.Model):
         verbose_name='Дата комментария'
     )
 
+    class Meta:
+        ordering = ("-created",)
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -90,3 +103,9 @@ class Follow(models.Model):
         related_name='following',
         verbose_name='Автор',
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(name='unique_follow',
+                                    fields=['user', 'author'])
+        ]

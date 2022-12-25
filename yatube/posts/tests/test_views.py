@@ -268,3 +268,14 @@ class FollowTests(TestCase):
         follow.delete()
         response_2 = self.follower_client.get(reverse('posts:follow_index'))
         self.assertEqual(len(response_2.context['page_obj']), 0)
+
+    def test_user_cannot_follow_twice_same_author(self):
+        """Тест один пользователь не может фоловить одного автора дважды"""
+        follower_count = Follow.objects.count()
+        self.follower_client.get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': self.user_following.username}))
+        self.follower_client.get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': self.user_following.username}))
+        self.assertEqual(Follow.objects.count(), follower_count + 1)
